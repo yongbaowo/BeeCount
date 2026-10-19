@@ -4,6 +4,7 @@ import 'package:beecount/config/personal_startup.dart';
 import 'package:beecount/data/db.dart';
 import 'package:beecount/l10n/app_localizations.dart';
 import 'package:beecount/providers/ui_state_providers.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -71,7 +72,7 @@ void main() {
       ledgerId: ledger.id,
       type: 'expense',
       amount: 12.5,
-      happenedAt: DateTime(2026, 10, 19),
+      happenedAt: Value(DateTime(2026, 10, 19)),
     ));
     await initializePersonalStartup(db, prefs);
     expect(prefs.getString('selected_language'), 'zh');
