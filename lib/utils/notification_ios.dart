@@ -1,6 +1,7 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'notification_util.dart' as util;
+import '../config/personal_edition.dart';
 
 /// iOS 特定的通知实现
 class IOSNotificationUtil implements util.NotificationUtil {
@@ -14,17 +15,17 @@ class IOSNotificationUtil implements util.NotificationUtil {
     if (_initialized) return;
 
     const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
+      requestAlertPermission: !personalEdition,
+      requestBadgePermission: !personalEdition,
+      requestSoundPermission: !personalEdition,
     );
 
     const initSettings = InitializationSettings(iOS: iosSettings);
 
     await _plugin.initialize(initSettings);
 
-    // 初始化后立即请求权限
-    await requestPermissions();
+    // Personal builds request permission only when the user enables reminders.
+    if (!personalEdition) await requestPermissions();
 
     _initialized = true;
 
@@ -57,6 +58,7 @@ class IOSNotificationUtil implements util.NotificationUtil {
     required int minute,
   }) async {
     if (!_initialized) await initialize();
+    if (personalEdition && !await requestPermissions()) return;
 
     final scheduledDate = util.calculateNextReminderTime(hour, minute);
     final tzScheduledDate = util.convertToTZDateTime(scheduledDate);
@@ -98,6 +100,7 @@ class IOSNotificationUtil implements util.NotificationUtil {
     required DateTime scheduledDate,
   }) async {
     if (!_initialized) await initialize();
+    if (personalEdition && !await requestPermissions()) return;
 
     final tzScheduledDate = util.convertToTZDateTime(scheduledDate);
 

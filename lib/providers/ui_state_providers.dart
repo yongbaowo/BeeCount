@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config/personal_edition.dart';
 
 import '../ai/providers/ai_provider_manager.dart';
 import 'database_providers.dart';
@@ -355,6 +356,7 @@ final shouldShowWelcomeProvider = StateProvider<bool>((ref) => false);
 
 // 初始化检查是否需要显示欢迎页面
 final welcomeCheckProvider = FutureProvider<bool>((ref) async {
+  if (personalEdition) return false;
   final prefs = await SharedPreferences.getInstance();
   final welcomeShown = prefs.getBool('welcome_shown') ?? false;
   if (!welcomeShown) {
