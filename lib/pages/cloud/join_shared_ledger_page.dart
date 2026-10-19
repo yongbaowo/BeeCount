@@ -2,6 +2,8 @@
 // Phase 1 不做 QR 扫码 / 短链 deeplink;两者都推到 Phase 3。MVP 只支持手动
 // 输入邀请码。accept 成功后 sync engine 走 onInviteAccepted 拉 shared-resources。
 import 'package:flutter/material.dart';
+import '../../config/personal_edition.dart';
+import '../personal/personal_style.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cloud_sync/flutter_cloud_sync.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -167,6 +169,7 @@ class _JoinSharedLedgerPageState extends ConsumerState<JoinSharedLedgerPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!sharedLedgersEnabled) return const PersonalOnlyPage();
     final l10n = AppLocalizations.of(context);
     final preview = _preview;
 

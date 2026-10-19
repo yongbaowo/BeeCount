@@ -2,6 +2,8 @@
 // 成员收支统计独立到 MemberStatsPage,从账本动作菜单单独入口。
 // (MVP 不实现转让 owner,留 Phase 3)
 import 'package:flutter/material.dart';
+import '../../config/personal_edition.dart';
+import '../personal/personal_style.dart';
 import 'package:flutter_cloud_sync/flutter_cloud_sync.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -25,6 +27,7 @@ class MemberListPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (!sharedLedgersEnabled) return const PersonalOnlyPage();
     final l10n = AppLocalizations.of(context);
     final membersAsync = ref.watch(ledgerMembersProvider(ledgerExternalId));
 

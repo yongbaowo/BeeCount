@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
+import 'config/personal_edition.dart';
+import 'pages/personal/personal_style.dart';
 import 'widgets/biz/login_2fa_challenge_view.dart';
 import 'widgets/ui/toast.dart';
 import 'theme.dart';
@@ -501,7 +503,9 @@ class MainApp extends ConsumerWidget {
 
     // 周期交易生成已统一在 appSplashInitProvider 中处理
 
-    final primary = ref.watch(primaryColorProvider);
+    final primary = personalEdition
+        ? PersonalStyle.honey
+        : ref.watch(primaryColorProvider);
     final platform = Theme.of(context).platform; // 当前平台
     final base = BeeTheme.lightTheme(platform: platform);
     final baseTextTheme = base.textTheme;
@@ -509,9 +513,12 @@ class MainApp extends ConsumerWidget {
     // ⭐ 亮色主题
     final theme = base.copyWith(
       textTheme: baseTextTheme,
-      colorScheme: base.colorScheme.copyWith(primary: primary),
+      colorScheme: base.colorScheme.copyWith(
+        primary: primary,
+        onPrimary: personalEdition ? PersonalStyle.ink : base.colorScheme.onPrimary,
+      ),
       primaryColor: primary,
-      scaffoldBackgroundColor: Colors.white,
+      scaffoldBackgroundColor: personalEdition ? const Color(0xFFF5F5F2) : Colors.white,
       dividerColor: Colors.black.withOpacity(0.06),
       listTileTheme: ListTileThemeData(
         dense: true,
@@ -528,21 +535,21 @@ class MainApp extends ConsumerWidget {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: primary,
+          foregroundColor: personalEdition ? PersonalStyle.ink : primary,
           textStyle: baseTextTheme.labelLarge,
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: primary,
-          foregroundColor: Colors.white,
+          foregroundColor: personalEdition ? PersonalStyle.ink : Colors.white,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
       floatingActionButtonTheme: base.floatingActionButtonTheme.copyWith(
         backgroundColor: primary,
-        foregroundColor: Colors.white,
+        foregroundColor: personalEdition ? PersonalStyle.ink : Colors.white,
       ),
       bottomNavigationBarTheme: base.bottomNavigationBarTheme.copyWith(
         selectedItemColor: primary,

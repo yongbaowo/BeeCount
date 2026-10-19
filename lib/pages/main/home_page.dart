@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../config/personal_edition.dart';
 import 'dart:async';
 import '../../providers/budget_providers.dart';
 import '../budget/budget_page.dart';
@@ -814,7 +815,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                                   ),
                                                 ),
                                                 // v24 共享账本:header 也显示 🤝 角标 + 成员数
-                                                if (!isEmpty &&
+                                                if (sharedLedgersEnabled && !isEmpty &&
                                                     ledger.isShared) ...[
                                                   const SizedBox(width: 4),
                                                   Icon(

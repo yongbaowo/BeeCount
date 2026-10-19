@@ -6,6 +6,8 @@ import '../../providers/theme_providers.dart';
 import '../../styles/tokens.dart';
 import '../../styles/header_skins.dart';
 import 'skin_animation_scope.dart';
+import '../../config/personal_edition.dart';
+import '../../pages/personal/personal_style.dart';
 
 class PrimaryHeader extends ConsumerWidget {
   final String title;
@@ -63,10 +65,14 @@ class PrimaryHeader extends ConsumerWidget {
 
     // ⭐ 头部皮肤:亮暗通用同一款(暗色由皮肤内部渲染成纯黑底 + 偏淡主题色图形)。
     // 'none' → null = 纯主题色 / 纯黑。
-    final skin = headerSkinById(ref.watch(headerSkinProvider));
+    final skin = personalEdition
+        ? null
+        : headerSkinById(ref.watch(headerSkinProvider));
 
     // ⭐ Header 背景颜色：亮色模式用主题色，暗黑模式用纯黑
-    final headerBg = isDark ? Colors.black : primary;
+    final headerBg = personalEdition
+        ? PersonalStyle.background(context)
+        : isDark ? Colors.black : primary;
 
     // ⭐ 文字和图标颜色（使用 Token）
     final textColor = BeeTokens.textPrimary(context);

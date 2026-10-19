@@ -9,6 +9,7 @@ import '../styles/header_skins.dart';
 import '../theme.dart';
 import '../widget/widget_manager.dart';
 import '../providers.dart';
+import '../config/personal_edition.dart';
 
 // 主题模式Provider（默认跟随系统）
 final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.system);
@@ -46,7 +47,8 @@ final themeModeInitProvider = FutureProvider<void>((ref) async {
 });
 
 // 可变主色（个性化换装使用）
-final primaryColorProvider = StateProvider<Color>((ref) => BeeTheme.honeyGold);
+final primaryColorProvider = StateProvider<Color>((ref) =>
+    personalEdition ? const Color(0xFFF2D56C) : BeeTheme.honeyGold);
 
 // 是否隐藏金额显示
 final hideAmountsProvider = StateProvider<bool>((ref) => false);
@@ -59,7 +61,7 @@ final hideAmountsProvider = StateProvider<bool>((ref) => false);
 final primaryColorInitProvider = FutureProvider<void>((ref) async {
   final prefs = await SharedPreferences.getInstance();
   final saved = prefs.getInt('primaryColor');
-  if (saved != null) {
+  if (saved != null && !personalEdition) {
     ref.read(primaryColorProvider.notifier).state = Color(saved);
   }
   ref.listen<Color>(primaryColorProvider, (prev, next) async {
