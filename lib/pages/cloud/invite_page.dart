@@ -1,6 +1,8 @@
 // 邀请新成员页 — Owner 用,生成 6 位邀请码 + 复制 / 分享短链。
 // Phase 1 不生成 QR(短链 + 输入码已能覆盖主要分享路径)。
 import 'package:flutter/material.dart';
+import '../../config/personal_edition.dart';
+import '../personal/personal_style.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cloud_sync/flutter_cloud_sync.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -79,6 +81,7 @@ class _InvitePageState extends ConsumerState<InvitePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!sharedLedgersEnabled) return const PersonalOnlyPage();
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: BeeTokens.scaffoldBackground(context),

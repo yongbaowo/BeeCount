@@ -1,6 +1,8 @@
 // 共享账本成员收支统计 — 简化版,只列每个成员本期 +收入 / -支出 / N笔。
 // 入口在账本动作菜单。Web 端有图表版,mobile 走简版列表足矣。
 import 'package:flutter/material.dart';
+import '../../config/personal_edition.dart';
+import '../personal/personal_style.dart';
 import 'package:flutter_cloud_sync/flutter_cloud_sync.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -31,6 +33,7 @@ class _MemberStatsPageState extends ConsumerState<MemberStatsPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!sharedLedgersEnabled) return const PersonalOnlyPage();
     final l10n = AppLocalizations.of(context);
     final statsAsync = ref.watch(memberStatsProvider(
       MemberStatsKey(ledgerId: widget.ledgerExternalId, scope: _scope),

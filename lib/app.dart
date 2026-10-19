@@ -34,6 +34,9 @@ import 'providers/security_providers.dart';
 import 'styles/tokens.dart';
 import 'styles/header_skins.dart';
 import 'providers/avatar_providers.dart';
+import 'config/personal_edition.dart';
+import 'pages/personal/personal_pages.dart';
+import 'pages/personal/personal_style.dart';
 
 class BeeApp extends ConsumerStatefulWidget {
   const BeeApp({super.key});
@@ -45,10 +48,13 @@ class BeeApp extends ConsumerStatefulWidget {
 class _BeeAppState extends ConsumerState<BeeApp>
     with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   final _pages = const [
-    HomePage(),
-    AnalyticsPage(),
+    if (personalEdition) PersonalOverviewPage() else HomePage(),
+    if (personalEdition)
+      PersonalOverviewPage(statistics: true)
+    else
+      AnalyticsPage(),
     AccountsPage(asTab: true),
-    MinePage(),
+    if (personalEdition) PersonalMinePage() else MinePage(),
   ];
 
   // 双击检测：记录最后一次点击的时间和索引
@@ -792,6 +798,31 @@ class _BeeAppState extends ConsumerState<BeeApp>
   @override
   Widget build(BuildContext context) {
     final idx = ref.watch(bottomTabIndexProvider);
+    if (personalEdition) {
+      return Scaffold(
+        backgroundColor: PersonalStyle.background(context),
+        body: IndexedStack(
+          index: idx,
+          children: [
+            for (var i = 0; i < _pages.length; i++)
+              TickerMode(enabled: i == idx, child: _pages[i]),
+          ],
+        ),
+        bottomNavigationBar: PersonalBottomBar(
+          index: idx,
+          onSelect: (index) =>
+              ref.read(bottomTabIndexProvider.notifier).state = index,
+          onAdd: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => const TransactionEditorPage(
+                initialKind: 'expense',
+                quickAdd: true,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     final l10n = AppLocalizations.of(context);
     final primaryColor = ref.watch(primaryColorProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;

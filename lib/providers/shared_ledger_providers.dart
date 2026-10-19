@@ -19,6 +19,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'database_providers.dart';
 import 'sync_providers.dart';
+import '../config/personal_edition.dart';
 
 /// 共享账本资源刷新 tick:Owner 改 / WS 收 / accept 接受 → ++,picker / 反查
 /// widget watch 它即可 reactive 刷新。
@@ -30,6 +31,7 @@ final sharedResourceRefreshProvider = StateProvider<int>((ref) => 0);
 /// 列表 stale 的窗口。
 final ledgerMembersProvider = FutureProvider.autoDispose
     .family<List<BeeCountCloudLedgerMember>, String>((ref, ledgerId) async {
+  if (!sharedLedgersEnabled) return const [];
   ref.watch(sharedResourceRefreshProvider);
   final cloud = await ref.watch(beecountCloudProviderInstance.future);
   if (cloud == null) return const [];
@@ -63,6 +65,7 @@ class MemberStatsKey {
 /// 真实错误,而不是把 401/403/500/网络 等全部 swallow 成"无数据"。
 final memberStatsProvider = FutureProvider.autoDispose
     .family<BeeCountCloudMemberStats?, MemberStatsKey>((ref, key) async {
+  if (!sharedLedgersEnabled) return null;
   ref.watch(sharedResourceRefreshProvider);
   final cloud = await ref.watch(beecountCloudProviderInstance.future);
   if (cloud == null) return null;
@@ -76,6 +79,7 @@ final memberStatsProvider = FutureProvider.autoDispose
 /// 列出某账本"当前 active"邀请(仅 owner)。
 final ledgerInvitesProvider = FutureProvider.autoDispose
     .family<List<BeeCountCloudInvite>, String>((ref, ledgerId) async {
+  if (!sharedLedgersEnabled) return const [];
   final cloud = await ref.watch(beecountCloudProviderInstance.future);
   if (cloud == null) return const [];
   try {
@@ -93,6 +97,7 @@ Future<BeeCountCloudInvite> createInviteAndRefresh(
   required String role,
   required int expiresInHours,
 }) async {
+  requireSharedLedgers();
   final cloud = await ref.read(beecountCloudProviderInstance.future);
   if (cloud == null) {
     throw StateError('BeeCount Cloud not configured');
@@ -112,6 +117,7 @@ Future<void> revokeInviteAndRefresh(
   required String ledgerId,
   required String code,
 }) async {
+  requireSharedLedgers();
   final cloud = await ref.read(beecountCloudProviderInstance.future);
   if (cloud == null) return;
   await cloud.revokeInvite(ledgerId: ledgerId, code: code);
@@ -123,6 +129,7 @@ Future<BeeCountCloudInviteAcceptResult> acceptInvite(
   WidgetRef ref, {
   required String code,
 }) async {
+  requireSharedLedgers();
   final cloud = await ref.read(beecountCloudProviderInstance.future);
   if (cloud == null) {
     throw StateError('BeeCount Cloud not configured');
@@ -138,6 +145,7 @@ Future<BeeCountCloudInvitePreview> previewInvite(
   WidgetRef ref, {
   required String code,
 }) async {
+  requireSharedLedgers();
   final cloud = await ref.read(beecountCloudProviderInstance.future);
   if (cloud == null) {
     throw StateError('BeeCount Cloud not configured');
@@ -151,6 +159,7 @@ Future<void> removeMemberAndRefresh(
   required String ledgerId,
   required String userId,
 }) async {
+  requireSharedLedgers();
   final cloud = await ref.read(beecountCloudProviderInstance.future);
   if (cloud == null) return;
   await cloud.removeMember(ledgerId: ledgerId, userId: userId);

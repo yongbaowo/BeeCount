@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../../config/personal_edition.dart';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -43,7 +44,7 @@ class _CloudServicePageState extends ConsumerState<CloudServicePage> {
       if (activeAsync.hasValue) {
         final active = activeAsync.value!;
         if (active.type == CloudBackendType.beecountCloud) {
-          setState(() => _selectedTab = 'cloud');
+          setState(() => _selectedTab = personalEdition ? 'backup' : 'cloud');
         } else if (active.type != CloudBackendType.local) {
           setState(() => _selectedTab = 'backup');
         }
@@ -126,7 +127,7 @@ class _CloudServicePageState extends ConsumerState<CloudServicePage> {
               options: [
                 CapsuleOption(value: 'offline', label: AppLocalizations.of(context).cloudTabOffline),
                 CapsuleOption(value: 'backup', label: AppLocalizations.of(context).cloudTabBackup),
-                CapsuleOption(value: 'cloud', label: AppLocalizations.of(context).cloudTabCloudSync),
+                if (!personalEdition) CapsuleOption(value: 'cloud', label: AppLocalizations.of(context).cloudTabCloudSync),
               ],
               onChanged: (value) => setState(() => _selectedTab = value),
             ),

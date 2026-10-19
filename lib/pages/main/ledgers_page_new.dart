@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../providers.dart';
+import '../../config/personal_edition.dart';
 import '../../providers/currency_providers.dart';
 import '../../models/ledger_display_item.dart';
 import '../../cloud/transactions_sync_manager.dart';
@@ -196,7 +197,7 @@ class _LedgersPageNewState extends ConsumerState<LedgersPageNew> {
       children: [
         // §7 共享账本入口 — 跟 web 端 LedgersSection 顶部"加入共享账本"
         // 按钮一致,放在列表顶部,比 header 角落 icon 显眼。
-        if (isBeeCountCloud)
+        if (sharedLedgersEnabled && isBeeCountCloud)
           Padding(
             padding: EdgeInsets.fromLTRB(
               16.0.scaled(context, ref),
@@ -478,7 +479,7 @@ class _LedgersPageNewState extends ConsumerState<LedgersPageNew> {
             // v24 共享账本:成员管理入口(任意 member 可看,owner 可邀请 / 踢人,
             // Editor 可看列表 + 退出账本)。非 BeeCount Cloud 模式没成员概念,
             // 整个入口隐藏。
-            if (isBeeCountCloud) ...[
+            if (sharedLedgersEnabled && isBeeCountCloud) ...[
               SimpleDialogOption(
                 onPressed: () => Navigator.pop(dctx, 'members'),
                 child: Row(
