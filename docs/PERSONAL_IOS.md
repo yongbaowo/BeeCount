@@ -15,13 +15,31 @@
 
 未删除共享数据表与底层同步协议，避免破坏已有数据库兼容性。这是个人客户端能力限制，不是服务端权限系统；此版建议从全新个人安装开始使用。
 
-## 验证状态
+## 验证状态（2026-10-19 更新）
 
-当前交付环境没有 Flutter/Dart SDK 和 Xcode，无法运行 Flutter analyzer、单元/组件测试、模拟器构建或真机安装。已进行 Dart 语法解析、源码相对导入检查、变更检查，以及 iOS 配置脚本的本地验证。这些检查不能替代编译与运行测试。
+已上传至 `yongbaowo/BeeCount` 的个人版分支，并在 GitHub macOS 云端完成验证：
 
-新增 `test/personal/personal_edition_test.dart` 覆盖收支规则、无云连接的共享功能关闭、320/390 宽度浅深色导航、真实数据展示及月份切换，尚待 Flutter 环境运行。
+- Flutter 3.27.3 依赖解析、代码生成与代码分析通过（保留原项目已有的非阻断警告）。
+- `test/personal/personal_edition_test.dart` 的 7 项测试通过：收支规则、关闭共享请求、320/390 宽度浅深色导航、真实数据展示与月份切换。
+- [iOS 模拟器 Debug 构建成功](https://github.com/yongbaowo/BeeCount/actions/runs/39182457055)。
+- [未签名 iPhone Release 构建、IPA 打包和 Artifact 上传成功](https://github.com/yongbaowo/BeeCount/actions/runs/39183210972)。
+- 下载后核验了外层压缩包 SHA-256、内层 IPA 完整性、独立 Bundle ID、iPhoneOS 平台和 arm64 主程序。
 
-新增手动工作流 `Personal iOS check`：获取依赖、代码生成、分析、测试、构建 iOS 模拟器应用。未上传到 GitHub、未触发运行，不会发布或签名。
+首次云端代码分析因 agentcore 子模块测试依赖没有初始化而失败；补上该模块的 `dart pub get` 后，重跑通过。
+
+尚未签名或完成 iPhone 真机安装与运行验收；构建成功不能替代真机测试。
+
+## 无 Mac、使用 Windows 安装
+
+未签名 IPA 在 `personal/unsigned-ipa` 分支生成，主 App 的 Bundle ID 是 `io.github.yongbaowo.beecount.personal`。首个侧载包只包含主 App，不包含小组件扩展；源代码中的扩展保持保留。iCloud 与小组件所需权限仍需另行配置，建议先验证本地记账及导出备份。
+
+1. 在上方 Release 构建页面的 Artifacts 下载 `BeeCount-Personal-unsigned-IPA`，解压外层 ZIP，得到 `BeeCount-Personal-unsigned.ipa`。
+2. 在 Windows 从 [Sideloadly 官网](https://sideloadly.io/) 获取工具，按官网要求准备 Apple 驱动组件。
+3. 用数据线连接自己的 iPhone，在手机上完成系统要求的信任确认。
+4. 将 IPA 放入 Sideloadly，用自己的 Apple 账号在本地签名安装，按工具和手机上的实际提示完成验证。
+5. 按工具说明处理开发者模式、证书信任和续签。官网说明免费账号签名通常有效 7 天，可配置自动续签；是否能在当前手机上正常运行仍须实测。
+
+云端构建没有使用 Apple 密码、签名证书或私钥。代码和构建配置分别在 [PR #1](https://github.com/yongbaowo/BeeCount/pull/1) 和 [PR #2](https://github.com/yongbaowo/BeeCount/pull/2) 留有草稿，尚未合并到 main。
 
 ## 在 Mac 上构建
 
