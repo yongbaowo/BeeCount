@@ -2,6 +2,17 @@
 
 基于 TNT-Likely/BeeCount 的 `5484496` 提交，保留原项目 LICENSE、作者与版权信息。
 
+## 0.0.3：首次启动直接记账
+
+首次安装不再展示语言、币种、分类模式、云同步、开源介绍五页引导，静默设置为简体中文、人民币 CNY、默认账本与一级分类，默认关闭记账提醒。iOS 初始化通知服务时不主动申请通知权限；用户手动开启提醒时再申请。
+
+初始化先完成数据库事务，再记录完成标志。启动中断后重试会检查已有数据，防止重复生成账本或分类。已完成设置的旧版安装不重建默认数据，保留账本、交易、币种与分类；未指定应用语言时默认简体中文。
+
+Flutter 代码分析、9 项个人版测试通过（原有 7 项与新增首次安装/升级 2 项；首次安装测试同时覆盖初始化中断重试）。iPhone Release 构建与下载后的完整性校验记录见本次构建和交付说明。
+
+构建：https://github.com/yongbaowo/BeeCount/actions/runs/39193630273
+源码提交：94eccd605c0ca8344b0f65c11b06ca9529d6df7f
+
 ## 本次实现
 
 - 默认进入个人简约界面：明细、统计、记账按钮、我的。
@@ -15,13 +26,33 @@
 
 未删除共享数据表与底层同步协议，避免破坏已有数据库兼容性。这是个人客户端能力限制，不是服务端权限系统；此版建议从全新个人安装开始使用。
 
-## 验证状态
+## 验证状态（2026-10-19 更新）
 
-当前交付环境没有 Flutter/Dart SDK 和 Xcode，无法运行 Flutter analyzer、单元/组件测试、模拟器构建或真机安装。已进行 Dart 语法解析、源码相对导入检查、变更检查，以及 iOS 配置脚本的本地验证。这些检查不能替代编译与运行测试。
+已上传至 `yongbaowo/BeeCount` 的个人版分支，并在 GitHub macOS 云端完成验证：
 
-新增 `test/personal/personal_edition_test.dart` 覆盖收支规则、无云连接的共享功能关闭、320/390 宽度浅深色导航、真实数据展示及月份切换，尚待 Flutter 环境运行。
+- Flutter 3.27.3 依赖解析、代码生成与代码分析通过（保留原项目已有的非阻断警告）。
+- `test/personal/personal_edition_test.dart` 的 7 项测试通过：收支规则、关闭共享请求、320/390 宽度浅深色导航、真实数据展示与月份切换；额外断言正文可见、导航栏高度和位置，覆盖首次真机发现的布局问题。
+- [iOS 模拟器 Debug 构建成功](https://github.com/yongbaowo/BeeCount/actions/runs/39182457055)。
+- [未签名 iPhone Release 构建、IPA 打包和 Artifact 上传成功](https://github.com/yongbaowo/BeeCount/actions/runs/39187814051)。
+- 下载后核验了外层压缩包 SHA-256、内层 IPA 完整性、独立 Bundle ID、iPhoneOS 平台和 arm64 主程序。
 
-新增手动工作流 `Personal iOS check`：获取依赖、代码生成、分析、测试、构建 iOS 模拟器应用。未上传到 GitHub、未触发运行，不会发布或签名。
+首次云端代码分析因 agentcore 子模块测试依赖没有初始化而失败；补上该模块的 `dart pub get` 后，重跑通过。
+
+用户已通过 Windows Sideloadly 完成首版签名安装。真机启动后发现导航栏占满页面、正文不可见：导航栏内的 Center 在 Scaffold 的宽松高度约束下扩展到了整屏。0.0.2 将导航内容高度限制为 64，并让首页测试与真实导航栏一起渲染，检查正文可点击、正文高度和导航位置。修复后仍需在同一手机上覆盖安装验收。
+
+## 无 Mac、使用 Windows 安装
+
+未签名 IPA 在 `personal/unsigned-ipa` 分支生成，主 App 的 Bundle ID 是 `io.github.yongbaowo.beecount.personal`。首个侧载包只包含主 App，不包含小组件扩展；源代码中的扩展保持保留。iCloud 与小组件所需权限仍需另行配置，建议先验证本地记账及导出备份。
+
+当前修复版为 0.0.3（build 3）。升级时沿用首次签名的 Apple 账号及 Sideloadly 设置覆盖安装，不要先卸载旧版。
+
+1. 在上方 Release 构建页面的 Artifacts 下载 `BeeCount-Personal-unsigned-IPA`，解压外层 ZIP，得到 `BeeCount-Personal-unsigned.ipa`。
+2. 在 Windows 从 [Sideloadly 官网](https://sideloadly.io/) 获取工具，按官网要求准备 Apple 驱动组件。
+3. 用数据线连接自己的 iPhone，在手机上完成系统要求的信任确认。
+4. 将 IPA 放入 Sideloadly，用自己的 Apple 账号在本地签名安装，按工具和手机上的实际提示完成验证。
+5. 按工具说明处理开发者模式、证书信任和续签。官网说明免费账号签名通常有效 7 天，可配置自动续签；是否能在当前手机上正常运行仍须实测。
+
+云端构建没有使用 Apple 密码、签名证书或私钥。代码和构建配置分别在 [PR #1](https://github.com/yongbaowo/BeeCount/pull/1) 和 [PR #2](https://github.com/yongbaowo/BeeCount/pull/2) 留有草稿，尚未合并到 main。
 
 ## 在 Mac 上构建
 
@@ -60,4 +91,5 @@ open ios/Runner.xcworkspace
 
 ## 许可
 
-遵循仓库 LICENSE。免费非商业修改不等于无条件再分发；修改版本公开源码、保留版权与许可等要求仍然适用。本次未发布仓库，也未替用户进行商业授权。
+遵循仓库 LICENSE。免费非商业修改不等于无条件再分发；修改版本公开源码、保留版权与许可等要求仍然适用。修改源码已公开在用户的 GitHub Fork；未替用户进行商业授权。
+

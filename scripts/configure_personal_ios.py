@@ -7,8 +7,9 @@ from pathlib import Path
 ORIGINAL_ID = 'com.tntlikely.beecount'
 
 
-def prepare(root: Path, bundle_id: str, team_id: str) -> dict[Path, str]:
+def prepare(root: Path, bundle_id: str, team_id: str | None) -> dict[Path, str]:
     changes = {}
+    development_team = team_id if team_id else '""'
     candidates = list((root / 'ios').rglob('*')) + [
         root / 'lib/main.dart',
         root / 'packages/flutter_cloud_sync_icloud/ios/Classes/ICloudManager.swift',
@@ -24,7 +25,7 @@ def prepare(root: Path, bundle_id: str, team_id: str) -> dict[Path, str]:
         after = before.replace(ORIGINAL_ID, bundle_id)
         after = after.replace('com.example.beecount.RunnerTests', bundle_id + '.RunnerTests')
         after = re.sub(r'DEVELOPMENT_TEAM = [A-Z0-9]+;',
-                       f'DEVELOPMENT_TEAM = {team_id};', after)
+                       f'DEVELOPMENT_TEAM = {development_team};', after)
         if path.suffix == '.xcconfig':
             after = re.sub(r'^APP_DISPLAY_NAME=.*$', 'APP_DISPLAY_NAME=蜜蜂记账·个人',
                            after, flags=re.MULTILINE)
@@ -42,14 +43,14 @@ def prepare(root: Path, bundle_id: str, team_id: str) -> dict[Path, str]:
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--bundle-id', required=True, help='Your own reverse-DNS app ID')
-    parser.add_argument('--team-id', required=True, help='Your Apple development team ID')
+    parser.add_argument('--team-id', help='Your Apple development team ID; omit for unsigned builds')
     parser.add_argument('--apply', action='store_true')
     args = parser.parse_args()
     if not re.fullmatch(r'[A-Za-z][A-Za-z0-9-]*(?:\.[A-Za-z0-9-]+){2,}', args.bundle_id):
         parser.error('Invalid bundle ID')
     if args.bundle_id.startswith(ORIGINAL_ID):
         parser.error('Choose your own bundle ID, rather than the upstream author’s ID')
-    if not re.fullmatch(r'[A-Z0-9]{10}', args.team_id):
+    if args.team_id is not None and not re.fullmatch(r'[A-Z0-9]{10}', args.team_id):
         parser.error('Team ID must contain 10 uppercase letters/digits')
     root = Path(__file__).resolve().parents[1]
     changes = prepare(root, args.bundle_id, args.team_id)

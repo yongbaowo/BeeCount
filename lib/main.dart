@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
 import 'config/personal_edition.dart';
+import 'config/personal_startup.dart';
 import 'pages/personal/personal_style.dart';
 import 'widgets/biz/login_2fa_challenge_view.dart';
 import 'widgets/ui/toast.dart';
@@ -56,6 +57,23 @@ Future<void> main() async {
   logger.info('App', '应用启动，日志系统已初始化');
   print('📱 LoggerService 已初始化');
 
+  // 创建全局ProviderContainer（需要在周期交易生成之前创建，因为需要使用 repositoryProvider）
+  // observers 必须挂在这里(根容器):无 override 的全局 provider 元素都挂载
+  // 于根容器,riverpod 只通知元素所属容器的 observers;历史上挂在下面
+  // ProviderScope(parent: ...) 子作用域上,didUpdateProvider 从未被回调,
+  // _WidgetUpdateObserver 一直是死代码(2026-07 review 发现)——启动预热/
+  // 切账本触发的小组件渲染全靠它,必须真正生效。
+  final container = ProviderContainer(
+    observers: const [_WidgetUpdateObserver()],
+  );
+
+  if (personalEdition) {
+    await initializePersonalStartup(
+      container.read(databaseProvider),
+      await SharedPreferences.getInstance(),
+    );
+  }
+
   // 初始化时区（必须在通知服务之前，修复iOS通知问题）
   try {
     NotificationFactory.initializeTimeZone();
@@ -89,16 +107,6 @@ Future<void> main() async {
   } catch (e) {
     print('⚠️  提醒监控服务启动失败（可能在不支持的平台上运行）: $e');
   }
-
-  // 创建全局ProviderContainer（需要在周期交易生成之前创建，因为需要使用 repositoryProvider）
-  // observers 必须挂在这里(根容器):无 override 的全局 provider 元素都挂载
-  // 于根容器,riverpod 只通知元素所属容器的 observers;历史上挂在下面
-  // ProviderScope(parent: ...) 子作用域上,didUpdateProvider 从未被回调,
-  // _WidgetUpdateObserver 一直是死代码(2026-07 review 发现)——启动预热/
-  // 切账本触发的小组件渲染全靠它,必须真正生效。
-  final container = ProviderContainer(
-    observers: const [_WidgetUpdateObserver()],
-  );
 
   // 初始化应用模式（需要在生成重复交易之前，确保模式正确）
   // 直接从 SharedPreferences 读取并设置到 appModeProvider

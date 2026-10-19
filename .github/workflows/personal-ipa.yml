@@ -1,0 +1,57 @@
+name: Personal unsigned IPA
+
+on:
+  push:
+    branches: ['personal/unsigned-ipa']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: personal-ipa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-ipa:
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.27.3'
+          channel: stable
+          cache: true
+      - name: Configure separate personal app identity
+        run: python3 scripts/configure_personal_ios.py --bundle-id io.github.yongbaowo.beecount.personal --apply
+      - run: flutter pub get
+      - name: Resolve agentcore test dependencies
+        working-directory: packages/agentcore
+        run: dart pub get
+      - run: dart run build_runner build --delete-conflicting-outputs
+      - run: flutter analyze --no-fatal-infos --no-fatal-warnings
+      - run: flutter test test/personal/
+      - name: Build unsigned iPhone release app
+        run: flutter build ios --release --no-codesign --build-name=0.0.3 --build-number=3 --dart-define=BEECOUNT_PERSONAL=true
+      - name: Package for personal signing
+        run: |
+          mkdir -p build/personal-ipa/Payload
+          ditto build/ios/iphoneos/Runner.app build/personal-ipa/Payload/Runner.app
+          python3 - <<'PY'
+          import shutil
+          from pathlib import Path
+          # The first sideload package contains the main app only. Widgets need
+          # their own provisioning; keep the upstream source and build intact.
+          plugins = Path('build/personal-ipa/Payload/Runner.app/PlugIns')
+          if plugins.exists():
+              shutil.rmtree(plugins)
+          PY
+          cd build/personal-ipa
+          zip -qry BeeCount-Personal-unsigned.ipa Payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BeeCount-Personal-unsigned-IPA
+          path: build/personal-ipa/BeeCount-Personal-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 14
