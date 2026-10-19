@@ -2,6 +2,17 @@
 
 基于 TNT-Likely/BeeCount 的 `5484496` 提交，保留原项目 LICENSE、作者与版权信息。
 
+## 0.0.3：首次启动直接记账
+
+首次安装不再展示语言、币种、分类模式、云同步、开源介绍五页引导，静默设置为简体中文、人民币 CNY、默认账本与一级分类，默认关闭记账提醒。iOS 初始化通知服务时不主动申请通知权限；用户手动开启提醒时再申请。
+
+初始化先完成数据库事务，再记录完成标志。启动中断后重试会检查已有数据，防止重复生成账本或分类。已完成设置的旧版安装不重建默认数据，保留账本、交易、币种与分类；未指定应用语言时默认简体中文。
+
+Flutter 代码分析、9 项个人版测试通过（原有 7 项与新增首次安装/升级 2 项；首次安装测试同时覆盖初始化中断重试）。iPhone Release 构建与下载后的完整性校验记录见本次构建和交付说明。
+
+构建：https://github.com/yongbaowo/BeeCount/actions/runs/39193630273
+源码提交：94eccd605c0ca8344b0f65c11b06ca9529d6df7f
+
 ## 本次实现
 
 - 默认进入个人简约界面：明细、统计、记账按钮、我的。
@@ -33,7 +44,7 @@
 
 未签名 IPA 在 `personal/unsigned-ipa` 分支生成，主 App 的 Bundle ID 是 `io.github.yongbaowo.beecount.personal`。首个侧载包只包含主 App，不包含小组件扩展；源代码中的扩展保持保留。iCloud 与小组件所需权限仍需另行配置，建议先验证本地记账及导出备份。
 
-当前修复版为 0.0.2（build 2）。升级时沿用首次签名的 Apple 账号及 Sideloadly 设置覆盖安装，不要先卸载旧版。
+当前修复版为 0.0.3（build 3）。升级时沿用首次签名的 Apple 账号及 Sideloadly 设置覆盖安装，不要先卸载旧版。
 
 1. 在上方 Release 构建页面的 Artifacts 下载 `BeeCount-Personal-unsigned-IPA`，解压外层 ZIP，得到 `BeeCount-Personal-unsigned.ipa`。
 2. 在 Windows 从 [Sideloadly 官网](https://sideloadly.io/) 获取工具，按官网要求准备 Apple 驱动组件。
@@ -81,3 +92,4 @@ open ios/Runner.xcworkspace
 ## 许可
 
 遵循仓库 LICENSE。免费非商业修改不等于无条件再分发；修改版本公开源码、保留版权与许可等要求仍然适用。修改源码已公开在用户的 GitHub Fork；未替用户进行商业授权。
+
