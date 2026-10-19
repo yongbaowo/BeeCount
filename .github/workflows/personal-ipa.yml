@@ -33,7 +33,7 @@ jobs:
       - run: flutter analyze --no-fatal-infos --no-fatal-warnings
       - run: flutter test test/personal/personal_edition_test.dart
       - name: Build unsigned iPhone release app
-        run: flutter build ios --release --no-codesign --dart-define=BEECOUNT_PERSONAL=true
+        run: flutter build ios --release --no-codesign --build-name=0.0.2 --build-number=2 --dart-define=BEECOUNT_PERSONAL=true
       - name: Package for personal signing
         run: |
           mkdir -p build/personal-ipa/Payload

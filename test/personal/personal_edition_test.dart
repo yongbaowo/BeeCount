@@ -72,6 +72,10 @@ void main() {
         await tester.pumpWidget(MaterialApp(
           theme: ThemeData(brightness: brightness),
           home: Scaffold(
+            body: const SizedBox.expand(
+              key: ValueKey('page-body'),
+              child: Center(child: Text('页面内容')),
+            ),
             bottomNavigationBar: PersonalBottomBar(
               index: 0,
               onSelect: (value) => selected = value,
@@ -79,6 +83,14 @@ void main() {
             ),
           ),
         ));
+        final bodyRect = tester.getRect(find.byKey(const ValueKey('page-body')));
+        final barRect = tester.getRect(find.byType(PersonalBottomBar));
+        // Regression: the unconstrained Center formerly grew to the viewport,
+        // consuming the entire Scaffold and hiding all page content.
+        expect(bodyRect.height, greaterThan(600));
+        expect(barRect.height, lessThan(120));
+        expect(barRect.top, greaterThan(700));
+        expect(find.text('页面内容').hitTestable(), findsOneWidget);
         await tester.tap(find.text('统计'));
         expect(selected, 1);
         await tester.tap(find.byTooltip('记一笔'));
@@ -104,10 +116,18 @@ void main() {
         personalBudgetProvider.overrideWith((ref) async => null),
         personalSelectedMonthProvider.overrideWith((ref) => DateTime(2026, 10)),
       ],
-      child: const MaterialApp(home: Scaffold(body: PersonalOverviewPage())),
+      child: MaterialApp(home: Scaffold(
+        body: const PersonalOverviewPage(),
+        bottomNavigationBar: PersonalBottomBar(
+          index: 0, onSelect: (_) {}, onAdd: () {},
+        ),
+      )),
     ));
     await tester.pumpAndSettle();
     expect(find.text('¥ 32.00'), findsOneWidget);
+    expect(find.text('¥ 32.00').hitTestable(), findsOneWidget);
+    expect(tester.getRect(find.byType(PersonalOverviewPage)).height,
+        greaterThan(600));
     expect(find.text('¥ 4,968.00'), findsOneWidget);
     expect(find.text('2026 年 10 月'), findsOneWidget);
     await tester.tap(find.byTooltip('上个月'));

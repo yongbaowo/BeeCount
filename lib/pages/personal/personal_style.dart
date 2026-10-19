@@ -86,7 +86,9 @@ class PersonalBottomBar extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 6),
             ),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Icon(icon, size: 22),
+              Icon(icon, size: 22, color: index == value
+                  ? PersonalStyle.text(context)
+                  : PersonalStyle.secondary(context)),
               const SizedBox(height: 4),
               Text(label, style: const TextStyle(fontSize: 11)),
             ]),
@@ -104,27 +106,33 @@ class PersonalBottomBar extends StatelessWidget {
           top: false,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            child: Row(children: [
-              _tab(context, 0, Icons.receipt_long_outlined, '明细'),
-              _tab(context, 1, Icons.bar_chart_rounded, '统计'),
-              Expanded(
-                child: Center(
-                  child: IconButton.filled(
-                    tooltip: '记一笔',
-                    onPressed: onAdd,
-                    style: IconButton.styleFrom(
-                      backgroundColor: PersonalStyle.honey,
-                      foregroundColor: PersonalStyle.ink,
-                      minimumSize: const Size(50, 50),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18)),
+            // Scaffold offers the bottom bar the whole viewport as a loose
+            // constraint. Bound its height so the centered add button cannot
+            // expand the navigation to screen height and leave no body space.
+            child: SizedBox(
+              height: 64,
+              child: Row(children: [
+                _tab(context, 0, Icons.receipt_long_outlined, '明细'),
+                _tab(context, 1, Icons.bar_chart_rounded, '统计'),
+                Expanded(
+                  child: Center(
+                    child: IconButton.filled(
+                      tooltip: '记一笔',
+                      onPressed: onAdd,
+                      style: IconButton.styleFrom(
+                        backgroundColor: PersonalStyle.honey,
+                        foregroundColor: PersonalStyle.ink,
+                        minimumSize: const Size(50, 50),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18)),
+                      ),
+                      icon: const Icon(Icons.add_rounded, size: 27),
                     ),
-                    icon: const Icon(Icons.add_rounded, size: 27),
                   ),
                 ),
-              ),
-              _tab(context, 3, Icons.person_outline_rounded, '我的'),
-            ]),
+                _tab(context, 3, Icons.person_outline_rounded, '我的'),
+              ]),
+            ),
           ),
         ),
       );
