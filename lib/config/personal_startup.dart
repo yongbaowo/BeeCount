@@ -23,12 +23,18 @@ Future<void> initializePersonalStartup(
     await prefs.setBool('reminder_enabled', false);
 
     await db.transaction(() async {
-      await db.ensureSeed(
-        l10n: lookupAppLocalizations(const Locale('zh')),
-        currency: 'CNY',
-        useHierarchicalCategories: false,
-        createDefaultLedger: true,
-      );
+      // A previous launch may have committed the database before preferences
+      // were saved. Never seed again over existing or imported data.
+      final ledgers = await (db.select(db.ledgers)..limit(1)).get();
+      final categories = await (db.select(db.categories)..limit(1)).get();
+      if (ledgers.isEmpty && categories.isEmpty) {
+        await db.ensureSeed(
+          l10n: lookupAppLocalizations(const Locale('zh')),
+          currency: 'CNY',
+          useHierarchicalCategories: false,
+          createDefaultLedger: true,
+        );
+      }
     });
     await prefs.setBool('welcome_shown', true);
   } else if (prefs.getString('selected_language') == null) {

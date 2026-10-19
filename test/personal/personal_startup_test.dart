@@ -34,6 +34,13 @@ void main() {
     expect(categories.every((c) => c.level == 1 && c.parentId == null), isTrue);
     expect(categories.any((c) => c.name == '餐饮'), isTrue);
 
+    // Simulate interruption after the DB commit but before preference markers.
+    await prefs.remove('personal_startup_completed');
+    await prefs.remove('welcome_shown');
+    await initializePersonalStartup(db, prefs);
+    expect(await db.select(db.ledgers).get(), hasLength(1));
+    expect(await db.select(db.categories).get(), hasLength(categories.length));
+
     final container = ProviderContainer();
     addTearDown(container.dispose);
     expect(await container.read(welcomeCheckProvider.future), isFalse);
